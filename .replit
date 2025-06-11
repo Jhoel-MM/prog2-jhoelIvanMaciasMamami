@@ -1,6 +1,4 @@
-run = "run command"
+run = "python3 lista_nombre.py"
+modules = ["python-3.11"]
 [nix]
-channel = "stable-24_05"
-
-[deployment]
-run = ["sh", "-c", "run command"]
+packages = ["run"]
