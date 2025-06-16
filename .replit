@@ -1,4 +1,4 @@
-run = "python hola.py"
+run = "python"
 modules = ["python-3.11"]
 [nix]
 packages = ["run"]
