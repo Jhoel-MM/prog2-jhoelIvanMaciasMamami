@@ -1,4 +1,4 @@
-run = "python ordenamiento_insercion.py"
+run = "python exa.py"
 modules = ["python-3.11"]
 [nix]
 packages = ["run"]
