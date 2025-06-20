@@ -119,7 +119,7 @@ cargar_inventario()
 ventana = tk.Tk()
 ventana.title("🍎 Inventario de Frutas")
 ventana.configure(bg="#f0f5f5")
-ventana.geometry("370x450")
+ventana.geometry("550x490")
 
 tk.Label(ventana, text="Fruta:", bg="#f0f5f5").pack(pady=(10,0))
 entrada_fruta = tk.Entry(ventana, width=30)
@@ -139,8 +139,8 @@ tk.Button(frame_botones, text="Eliminar", bg="#ffcccc", command=eliminar_fruta, 
 tk.Button(frame_botones, text="Disminuir", bg="#cce5ff", command=disminuir_fruta, width=10).grid(row=1, column=1, padx=5, pady=5)
 
 # Lista
-tk.Label(ventana, text="Inventario Actual:", bg="#f0f5f5", font=("Arial", 10, "bold")).pack(pady=5)
-lista = tk.Listbox(ventana, width=40, height=10)
+tk.Label(ventana, text="Inventario Actual:", bg="#f0f5f5", font=("Arial", 12, "bold")).pack(pady=5)
+lista = tk.Listbox(ventana, width=45, height=15)
 lista.pack(pady=5)
 lista.bind("<<ListboxSelect>>", seleccionar_fruta)
 
