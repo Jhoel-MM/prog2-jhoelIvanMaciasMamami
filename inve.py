@@ -1,115 +1,95 @@
-# ------------------------------
-# Gestión de Inventario para una Pequeña Tienda Local
-# Primera versión con persistencia en JSON
-# ------------------------------
-import json
-import os
+import random
 
-# Clase Producto (simulada con diccionario)
-def crear_producto(codigo, nombre, precio, stock):
-    return {
-        "codigo": codigo,
-        "nombre": nombre,
-        "precio": precio,
-        "stock": stock
-    }
+TAM, NUM_BARCOS, INTENTOS = 5, 3, 10
+LETRAS = ['A', 'B', 'C', 'D', 'E']
 
-# ------------------------------
-# Funciones principales
-# ------------------------------
-def agregar_producto(inventario):
-    codigo = input("Ingrese el código del producto: ")
-    nombre = input("Ingrese el nombre del producto: ")
-    try:
-        precio = float(input("Ingrese el precio del producto: "))
-        stock = int(input("Ingrese el stock inicial: "))
-        inventario.append(crear_producto(codigo, nombre, precio, stock))
-        print("\n✅ Producto agregado con éxito!\n")
-    except ValueError:
-        print("❌ Precio o stock inválido.\n")
+def crear_tablero(): return [['~']*TAM for _ in range(TAM)]
 
-def listar_productos(inventario):
-    if not inventario:
-        print("\n📦 Inventario vacío.\n")
-        return
-    print("\n📋 Listado de productos:")
-    print("Código\tNombre\t\tPrecio\tStock")
-    print("-"*40)
-    for p in inventario:
-        print(f"{p['codigo']}\t{p['nombre']:<10}\t{p['precio']}\t{p['stock']}")
-    print()
+def mostrar(tablero):
+    print("   " + " ".join(str(i+1) for i in range(TAM)))
+    for i, fila in enumerate(tablero):
+        print(f"{LETRAS[i]}  " + " ".join(fila))
 
-def buscar_producto(inventario):
-    criterio = input("Ingrese el código o nombre del producto a buscar: ").lower()
-    encontrados = [p for p in inventario if criterio in p['codigo'].lower() or criterio in p['nombre'].lower()]
-    if encontrados:
-        print("\n🔎 Productos encontrados:")
-        for p in encontrados:
-            print(p)
-    else:
-        print("\n❌ No se encontró el producto.\n")
+def colocar_barcos(tablero):
+    for _ in range(NUM_BARCOS):
+        while True:
+            f, c = random.randint(0,TAM-1), random.randint(0,TAM-1)
+            if tablero[f][c] != 'B':
+                tablero[f][c] = 'B'
+                break
 
-def actualizar_stock(inventario):
-    codigo = input("Ingrese el código del producto a actualizar: ")
-    for p in inventario:
-        if p['codigo'] == codigo:
-            try:
-                nuevo_stock = int(input(f"Stock actual: {p['stock']}. Ingrese el nuevo stock: "))
-                p['stock'] = nuevo_stock
-                print("\n✅ Stock actualizado exitosamente.\n")
-            except ValueError:
-                print("❌ Stock inválido.")
-            return
-    print("\n❌ Producto no encontrado.\n")
-
-# ------------------------------
-# Persistencia de datos
-# ------------------------------
-def cargar_inventario(nombre_archivo="inventario.json"):
-    if os.path.exists(nombre_archivo):
-        with open(nombre_archivo, 'r') as archivo:
-            return json.load(archivo)
-    return []
-
-def guardar_inventario(inventario, nombre_archivo="inventario.json"):
-    with open(nombre_archivo, 'w') as archivo:
-        json.dump(inventario, archivo, indent=4)
-
-# ------------------------------
-# Menú interactivo
-# ------------------------------
-def menu():
-    inventario = cargar_inventario()
+def pedir_coord(nombre):
     while True:
-        print("""
-        ==============================
-        📦 GESTIÓN DE INVENTARIO
-        ------------------------------
-        1. Agregar producto
-        2. Listar productos
-        3. Buscar producto
-        4. Actualizar stock
-        5. Guardar y Salir
-        ==============================
-        """)
-        opcion = input("Seleccione una opción: ")
-        if opcion == '1':
-            agregar_producto(inventario)
-        elif opcion == '2':
-            listar_productos(inventario)
-        elif opcion == '3':
-            buscar_producto(inventario)
-        elif opcion == '4':
-            actualizar_stock(inventario)
-        elif opcion == '5':
-            guardar_inventario(inventario)
-            print("\n✅ Inventario guardado. ¡Hasta luego!\n")
-            break
-        else:
-            print("\n❌ Opción no válida. Intente de nuevo.\n")
+        coord = input(f"{nombre}, coordenada (A1-E5): ").upper()
+        if len(coord) >= 2 and coord[0] in LETRAS and coord[1:].isdigit():
+            f, c = LETRAS.index(coord[0]), int(coord[1:]) - 1
+            if 0 <= c < TAM: return f, c
+        print("❌ Coordenada inválida.")
 
-# ------------------------------
-# Ejecutar programa
-# ------------------------------
+def disparo(nombre, visible, oculto):
+    mostrar(visible)
+    f, c = pedir_coord(nombre)
+    if visible[f][c] != '~':
+        print("⚠️ Ya elegiste eso.")
+        return 0
+    if oculto[f][c] == 'B':
+        print("🔥 ¡Tocado!")
+        visible[f][c] = 'X'
+        return 1
+    else:
+        print("🌊 Agua.")
+        visible[f][c] = 'O'
+        return 0
+
+def revelar(visible, oculto):
+    for i in range(TAM):
+        for j in range(TAM):
+            if oculto[i][j] == 'B' and visible[i][j] == '~':
+                visible[i][j] = '🚢'
+
+def jugar():
+    print("1. Contra bot\n2. 2 jugadores")
+    modo = input("Elige modo: ")
+
+    if modo == '2':
+        n1, n2 = input("Jugador 1: "), input("Jugador 2: ")
+        vis = [crear_tablero(), crear_tablero()]
+        occ = [crear_tablero(), crear_tablero()]
+        colocar_barcos(occ[0]); colocar_barcos(occ[1])
+        pts = [0, 0]; turno = 0
+
+        for _ in range(INTENTOS):
+            print(f"\n🎯 Turno de {n1 if turno==0 else n2}")
+            pts[turno] += disparo([n1, n2][turno], vis[turno], occ[1-turno])
+            if pts[turno] == NUM_BARCOS: break
+            turno = 1 - turno
+
+        print(f"\n🟢 {n1}: {pts[0]} | 🟣 {n2}: {pts[1]}")
+        if pts[0] > pts[1]: print(f"🏆 ¡Gana {n1}!")
+        elif pts[1] > pts[0]: print(f"🏆 ¡Gana {n2}!")
+        else: print("🤝 ¡Empate!")
+        for i in range(2):
+            print(f"\nBarcos de {[n2, n1][i]}:")
+            revelar(vis[i], occ[1-i])
+            mostrar(vis[i])
+
+    else:
+        nombre = input("Tu nombre: ")
+        vis, occ = crear_tablero(), crear_tablero()
+        colocar_barcos(occ)
+        aciertos = 0
+
+        for _ in range(INTENTOS):
+            aciertos += disparo(nombre, vis, occ)
+            if aciertos == NUM_BARCOS: break
+
+        if aciertos == NUM_BARCOS:
+            print("🎉 ¡Hundiste todos los barcos!")
+        else:
+            print("💥 Sin intentos. Perdiste.")
+        print("\n🔍 Posiciones reales:")
+        revelar(vis, occ)
+        mostrar(vis)
+
 if __name__ == "__main__":
-    menu()
+    jugar()
