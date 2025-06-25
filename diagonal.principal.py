@@ -5,4 +5,4 @@ def sumar_diagonal_principal(matriz):
         suma += matriz[i][i]
     return suma
 def probar_sumar_diagonal_principal():
-    print("")
+    print("\nProbando sumar_diagonal_principal...")
